@@ -2,6 +2,7 @@
 using MyFace.Models.Request;
 using MyFace.Models.Response;
 using MyFace.Repositories;
+using Myface.Services;
 
 namespace MyFace.Controllers
 {
@@ -10,30 +11,52 @@ namespace MyFace.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUsersRepo _users;
+        private readonly IAuthService _authservice;
 
-        public UsersController(IUsersRepo users)
+        public UsersController(IUsersRepo users, IAuthService authservice)
         {
             _users = users;
+            _authservice = authservice;
         }
         
         [HttpGet("")]
-        public ActionResult<UserListResponse> Search([FromQuery] UserSearchRequest searchRequest)
+        public ActionResult<UserListResponse> Search(
+            [FromQuery] UserSearchRequest searchRequest,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
             var users = _users.Search(searchRequest);
             var userCount = _users.Count(searchRequest);
             return UserListResponse.Create(searchRequest, users, userCount);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<UserResponse> GetById([FromRoute] int id)
+        public ActionResult<UserResponse> GetById(
+            [FromRoute] int id,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
+
             var user = _users.GetById(id);
             return new UserResponse(user);
         }
 
         [HttpPost("create")]
-        public IActionResult Create([FromBody] CreateUserRequest newUser)
+        public IActionResult Create(
+            [FromBody] CreateUserRequest newUser,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -47,8 +70,16 @@ namespace MyFace.Controllers
         }
 
         [HttpPatch("{id}/update")]
-        public ActionResult<UserResponse> Update([FromRoute] int id, [FromBody] UpdateUserRequest update)
+        public ActionResult<UserResponse> Update(
+            [FromRoute] int id, 
+            [FromBody] UpdateUserRequest update,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -59,8 +90,14 @@ namespace MyFace.Controllers
         }
         
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public IActionResult Delete(
+            [FromRoute] int id,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
             _users.Delete(id);
             return Ok();
         }

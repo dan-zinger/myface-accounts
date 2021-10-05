@@ -29,19 +29,7 @@ namespace MyFace.Controllers
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
             
-            if (authorizationHeader is null)
-            {
-                return new UnauthorizedResult();
-            }
-            try
-            {
-                var isAuthorized = _authservice.AuthenticateUser(authorizationHeader);
-                if (!isAuthorized)
-                {
-                    return new UnauthorizedResult();
-                }
-            }
-            catch (System.InvalidOperationException)
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
             {
                 return new UnauthorizedResult();
             }
@@ -52,15 +40,29 @@ namespace MyFace.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<PostResponse> GetById([FromRoute] int id)
+        public ActionResult<PostResponse> GetById(
+            [FromRoute] int id,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
+
             var post = _posts.GetById(id);
             return new PostResponse(post);
         }
 
         [HttpPost("create")]
-        public IActionResult Create([FromBody] CreatePostRequest newPost)
+        public IActionResult Create(
+            [FromBody] CreatePostRequest newPost,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -74,8 +76,16 @@ namespace MyFace.Controllers
         }
 
         [HttpPatch("{id}/update")]
-        public ActionResult<PostResponse> Update([FromRoute] int id, [FromBody] UpdatePostRequest update)
+        public ActionResult<PostResponse> Update(
+            [FromRoute] int id, 
+            [FromBody] UpdatePostRequest update,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -86,8 +96,15 @@ namespace MyFace.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] int id)
+        public IActionResult Delete(
+            [FromRoute] int id,
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
+            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            {
+                return new UnauthorizedResult();
+            }
+
             _posts.Delete(id);
             return Ok();
         }

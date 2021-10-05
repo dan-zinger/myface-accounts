@@ -10,6 +10,7 @@ namespace Myface.Services
     public interface IAuthService
         {
             bool AuthenticateUser(string authorizationHeader);
+            bool isUnAuthorizedResult(string authorizationHeader);
         }
     public class AuthService : IAuthService
     {
@@ -41,6 +42,28 @@ namespace Myface.Services
                 return false;
             }
 
+        }
+
+        public bool isUnAuthorizedResult(string authorizationHeader)
+        {
+            if (authorizationHeader is null)
+            {
+                return true;
+            }
+            try
+            {
+                var isAuthorized = AuthenticateUser(authorizationHeader);
+                if (!isAuthorized)
+                {
+                    return true;
+                }
+            }
+            catch (System.InvalidOperationException)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
