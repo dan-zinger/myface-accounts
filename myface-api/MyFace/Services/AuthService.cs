@@ -3,7 +3,7 @@ using MyFace.Models.Request;
 using MyFace.Models.Response;
 using MyFace.Repositories;
 using MyFace.Helpers;
-
+using System;
 
 namespace Myface.Services
 {
@@ -32,8 +32,7 @@ namespace Myface.Services
             byte[] salt = user.salt;
 
             var hashedPasswordToCheck = AuthHelper.GetHashedPassword(salt, passwordToCheck);
-
-            if (hashed_password == passwordToCheck)
+            if (hashed_password == hashedPasswordToCheck)
             {
                 return true;
             }

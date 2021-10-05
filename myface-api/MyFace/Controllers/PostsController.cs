@@ -4,6 +4,7 @@ using MyFace.Models.Response;
 using MyFace.Repositories;
 using MyFace.Helpers;
 using Myface.Services;
+using System;
 
 namespace MyFace.Controllers
 {
@@ -25,24 +26,29 @@ namespace MyFace.Controllers
         [HttpGet("")]
         public ActionResult<PostListResponse> Search(
             [FromQuery] PostSearchRequest searchRequest, 
-            [FromHeader (Name = "Authorization")] string authorizationHeader)   // Basic {{username}:{password}} 
+            [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            var isAuthorized = _authservice.AuthenticateUser(authorizationHeader);
             
-            if (isAuthorized)
+            if (authorizationHeader is null)
             {
-                var posts = _posts.Search(searchRequest);
-                var postCount = _posts.Count(searchRequest);
-                return PostListResponse.Create(searchRequest, posts, postCount);
+                return new UnauthorizedResult();
             }
-            else
+            try
             {
-                var notFoundResult = new NotFoundResult();
-                return notFoundResult;
+                var isAuthorized = _authservice.AuthenticateUser(authorizationHeader);
+                if (!isAuthorized)
+                {
+                    return new UnauthorizedResult();
+                }
             }
-            
+            catch (System.InvalidOperationException)
+            {
+                return new UnauthorizedResult();
+            }
 
-            
+            var posts = _posts.Search(searchRequest);
+            var postCount = _posts.Count(searchRequest);
+            return PostListResponse.Create(searchRequest, posts, postCount);
         }
 
         [HttpGet("{id}")]
