@@ -12,11 +12,14 @@ namespace MyFace.Controllers
     {
         private readonly IInteractionsRepo _interactions;
         private readonly IAuthService _authservice;
+        private readonly IUsersRepo _users;
 
-        public InteractionsController(IInteractionsRepo interactions, IAuthService authservice)
+
+        public InteractionsController(IInteractionsRepo interactions, IAuthService authservice, IUsersRepo users)
         {
             _interactions = interactions;
             _authservice = authservice;
+            _users = users;
         }
     
         [HttpGet("")]
@@ -50,7 +53,7 @@ namespace MyFace.Controllers
 
         [HttpPost("create")]
         public IActionResult Create(
-            [FromBody] CreateInteractionRequest newUser, 
+            [FromBody] CreateInteractionRequest newInteraction, 
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
             if (_authservice.isUnAuthorizedResult(authorizationHeader))
@@ -62,8 +65,10 @@ namespace MyFace.Controllers
             {
                 return BadRequest(ModelState);
             }
-        
-            var interaction = _interactions.Create(newUser);
+
+            var userId = _users.GetIdByAuthorizationHeader(authorizationHeader);
+
+            var interaction = _interactions.Create(newInteraction, userId);
 
             var url = Url.Action("GetById", new { id = interaction.Id });
             var responseViewModel = new InteractionResponse(interaction);

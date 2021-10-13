@@ -12,7 +12,7 @@ namespace MyFace.Controllers
     [Route("/posts")]
     public class PostsController : ControllerBase
     {    
-        private readonly IPostsRepo _posts;
+       private readonly IPostsRepo _posts;
         private readonly IUsersRepo _users;
         private readonly IAuthService _authservice;   // CORRECT SYNTAX?
 
@@ -28,7 +28,7 @@ namespace MyFace.Controllers
             [FromQuery] PostSearchRequest searchRequest, 
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            
+            Console.WriteLine("hi");
             if (_authservice.isUnAuthorizedResult(authorizationHeader))
             {
                 return new UnauthorizedResult();
@@ -65,10 +65,15 @@ namespace MyFace.Controllers
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(ModelState);  
             }
             
-            var post = _posts.Create(newPost);
+            // get userid from Authorization header
+            var userId = _users.GetIdByAuthorizationHeader(authorizationHeader);
+            // newPost.UserId = userid
+            
+            // REMOVE USERid FIELD FROM VIEW
+            var post = _posts.Create(newPost, userId);
 
             var url = Url.Action("GetById", new { id = post.Id });
             var postResponse = new PostResponse(post);

@@ -2,6 +2,7 @@
 using System.Linq;
 using MyFace.Models.Database;
 using MyFace.Models.Request;
+using MyFace.Helpers;
 
 namespace MyFace.Repositories
 {
@@ -14,6 +15,7 @@ namespace MyFace.Repositories
         User Update(int id, UpdateUserRequest update);
         void Delete(int id);
         User GetByUserName (string username);
+        int GetIdByAuthorizationHeader (string authorizationHeader);
     }
     
     public class UsersRepo : IUsersRepo
@@ -102,6 +104,18 @@ namespace MyFace.Repositories
         {
             var user = _context.Users.Where(u => u.Username == username).Single();
             return user;
+        }
+        
+        public int GetIdByAuthorizationHeader (string authorizationHeader)
+        {
+            var parts = authorizationHeader.Split(' ');
+            var userNamePassword = parts[1];
+            var userNamePasswordDecoded = AuthHelper.Base64Decode(userNamePassword);
+            var userNamePasswordDecodedSplit = userNamePasswordDecoded.Split(':');
+            var userName = userNamePasswordDecodedSplit[0];
+
+            var user = GetByUserName(userName);
+            return user.Id;
         }
     }
 }
