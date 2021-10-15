@@ -2,6 +2,7 @@
 import {Page} from "../Page/Page";
 import {LoginContext} from "../../Components/LoginManager/LoginManager";
 import "./Login.scss";
+import { loginUser } from '../../Api/apiClient';
 
 export function Login(): JSX.Element {
     const loginContext = useContext(LoginContext);
@@ -9,8 +10,18 @@ export function Login(): JSX.Element {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     
+
+    //save response in local variable and then put login in try block
     function tryLogin(event: FormEvent) {
+        loginContext.setUserName(username);
+        loginContext.setPassword(password);
+        loginUser({username: username, password: password, logOut: loginContext.logOut})
+            .then(response => {
+                loginContext.setRole(response.role)
+                loginContext.setUserId(response.userId)
+            })
         event.preventDefault();
+        
         loginContext.logIn();
     }
     

@@ -4,13 +4,16 @@ using MyFace.Models.Response;
 using MyFace.Repositories;
 using MyFace.Helpers;
 using System;
+using MyFace.Models.Database;
+
 
 namespace Myface.Services
 {
     public interface IAuthService
         {
             bool AuthenticateUser(string authorizationHeader);
-            bool isUnAuthorizedResult(string authorizationHeader);
+            bool IsAuthenticated(string authorizationHeader);
+            bool isAuthorizedAdmin(User user);
         }
     public class AuthService : IAuthService
     {
@@ -44,25 +47,35 @@ namespace Myface.Services
 
         }
 
-        public bool isUnAuthorizedResult(string authorizationHeader)
+        public bool IsAuthenticated(string authorizationHeader)
         {
             if (authorizationHeader is null)
             {
-                return true;
+                return false;
             }
             try
             {
                 var isAuthorized = AuthenticateUser(authorizationHeader);
                 if (!isAuthorized)
                 {
-                    return true;
+                    return false;
                 }
             }
             catch (System.InvalidOperationException)
             {
-                return true;
+                return false;
             }
 
+            return true;
+        }
+
+        public bool isAuthorizedAdmin(User user)
+        {
+            if (user.Role == RoleType.ADMIN)
+                {
+                    return true;
+                }
+            
             return false;
         }
     }

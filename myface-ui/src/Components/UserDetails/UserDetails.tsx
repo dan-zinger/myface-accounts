@@ -1,18 +1,20 @@
-﻿import React, {useEffect, useState} from 'react';
+﻿import React, {useContext, useEffect, useState} from 'react';
 import {fetchUser, User} from "../../Api/apiClient";
 import "./UserDetails.scss";
+import {LoginContext} from "../../Components/LoginManager/LoginManager";
 
 interface UserDetailsProps {
     userId: string;
 }
 
 export function UserDetails(props: UserDetailsProps): JSX.Element {
+    const loginContext = useContext(LoginContext);
     const [user, setUser] = useState<User | null>(null);
-    
+     
     useEffect(() => {
-        fetchUser(props.userId)
+        fetchUser({logOut: loginContext.logOut, username: loginContext.username, password:loginContext.password},props.userId)
             .then(response => setUser(response));
-    }, [props]);
+    }, [props,loginContext.logOut, loginContext.username, loginContext.password]);
     
     if (!user) {
         return <section>Loading...</section>

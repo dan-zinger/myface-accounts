@@ -29,7 +29,7 @@ namespace MyFace.Controllers
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
             Console.WriteLine("hi");
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -44,7 +44,7 @@ namespace MyFace.Controllers
             [FromRoute] int id,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -58,7 +58,7 @@ namespace MyFace.Controllers
             [FromBody] CreatePostRequest newPost,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -69,7 +69,7 @@ namespace MyFace.Controllers
             }
             
             // get userid from Authorization header
-            var userId = _users.GetIdByAuthorizationHeader(authorizationHeader);
+            var userId = _users.GetUserByAuthorizationHeader(authorizationHeader).Id;
             // newPost.UserId = userid
             
             // REMOVE USERid FIELD FROM VIEW
@@ -86,7 +86,7 @@ namespace MyFace.Controllers
             [FromBody] UpdatePostRequest update,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -105,13 +105,21 @@ namespace MyFace.Controllers
             [FromRoute] int id,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
 
-            _posts.Delete(id);
-            return Ok();
+            var user = _users.GetUserByAuthorizationHeader(authorizationHeader);
+            if (!(_authservice.isAuthorizedAdmin(user)))
+            {
+                return new StatusCodeResult(403);
+            } else {
+                _posts.Delete(id);
+                return RedirectToAction("posts");;
+            }
+            
+            
         }
     }
 }

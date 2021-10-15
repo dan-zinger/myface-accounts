@@ -24,7 +24,7 @@ namespace MyFace.Controllers
             [FromQuery] FeedSearchRequest searchRequest, 
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }

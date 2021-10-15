@@ -27,7 +27,7 @@ namespace MyFace.Controllers
             [FromQuery] SearchRequest search, 
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -42,7 +42,7 @@ namespace MyFace.Controllers
             [FromRoute] int id, 
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -56,7 +56,7 @@ namespace MyFace.Controllers
             [FromBody] CreateInteractionRequest newInteraction, 
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -66,7 +66,7 @@ namespace MyFace.Controllers
                 return BadRequest(ModelState);
             }
 
-            var userId = _users.GetIdByAuthorizationHeader(authorizationHeader);
+            var userId = _users.GetUserByAuthorizationHeader(authorizationHeader).Id;
 
             var interaction = _interactions.Create(newInteraction, userId);
 
@@ -80,11 +80,17 @@ namespace MyFace.Controllers
             [FromRoute] int id, 
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
             
+            var user = _users.GetUserByAuthorizationHeader(authorizationHeader);
+            if (!(_authservice.isAuthorizedAdmin(user)))
+            {
+                return new UnauthorizedResult();
+            }
+
             _interactions.Delete(id);
             return Ok();
         }

@@ -4,6 +4,7 @@ using MyFace.Models.Response;
 using MyFace.Repositories;
 using Myface.Services;
 
+
 namespace MyFace.Controllers
 {
     [ApiController]
@@ -24,7 +25,7 @@ namespace MyFace.Controllers
             [FromQuery] UserSearchRequest searchRequest,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -38,7 +39,7 @@ namespace MyFace.Controllers
             [FromRoute] int id,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -52,7 +53,7 @@ namespace MyFace.Controllers
             [FromBody] CreateUserRequest newUser,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -75,7 +76,7 @@ namespace MyFace.Controllers
             [FromBody] UpdateUserRequest update,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
             }
@@ -94,9 +95,16 @@ namespace MyFace.Controllers
             [FromRoute] int id,
             [FromHeader (Name = "Authorization")] string authorizationHeader)
         {
-            if (_authservice.isUnAuthorizedResult(authorizationHeader))
+            if (!(_authservice.IsAuthenticated(authorizationHeader)))
             {
                 return new UnauthorizedResult();
+            }
+
+            var user = _users.GetUserByAuthorizationHeader(authorizationHeader);
+
+            if (_authservice.isAuthorizedAdmin(user))
+            {
+                return StatusCode(403, "Access Denied");
             }
             _users.Delete(id);
             return Ok();

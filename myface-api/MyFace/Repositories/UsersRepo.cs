@@ -15,7 +15,7 @@ namespace MyFace.Repositories
         User Update(int id, UpdateUserRequest update);
         void Delete(int id);
         User GetByUserName (string username);
-        int GetIdByAuthorizationHeader (string authorizationHeader);
+        User GetUserByAuthorizationHeader (string authorizationHeader);
     }
     
     public class UsersRepo : IUsersRepo
@@ -106,7 +106,7 @@ namespace MyFace.Repositories
             return user;
         }
         
-        public int GetIdByAuthorizationHeader (string authorizationHeader)
+        public User GetUserByAuthorizationHeader (string authorizationHeader)
         {
             var parts = authorizationHeader.Split(' ');
             var userNamePassword = parts[1];
@@ -115,7 +115,9 @@ namespace MyFace.Repositories
             var userName = userNamePasswordDecodedSplit[0];
 
             var user = GetByUserName(userName);
-            return user.Id;
+            return user;
         }
+
+
     }
 }
